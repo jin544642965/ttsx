@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block head %}
+    <script>
+        function add_cart(gid){
+            // 判断是否登录，如果登陆则添加
+            $.get('/user/islogin/', function(data){
+                if(data.islogin){
+                    $.get('/cart/add/', {gid: gid}, function(data){
+                        if(data.isadd){//保存成功
+                            $.get('/cart/count/', function(data){
+                                $('#show_count').text(data.cart_count);
+                            });
+
+                        }else{//保存失败
+                            alert('添加到购物车失败')
+                        }
+                    })
+                }else{//如果未登陆，则转到登录页
+                    location.href = '/user/login/';
+                }
+            });
+{#            ajax的get方法 远程请求，如果需要在出错时执行函数，请使用 $.ajax#}
+        }
+
+
+    </script>
+{% endblock head%}
+{% block body%}
+
+
+	<div class="navbar_con">
+		<div class="navbar clearfix">
+			<div class="subnav_con fl">
+				<h1>全部商品分类</h1>
+				<span></span>
+				<ul class="subnav">
+					<li><a href="/list1_1/" class="fruit">新鲜水果</a></li>
+					<li><a href="/list2_1/" class="seafood">海鲜水产</a></li>
+					<li><a href="/list3_1/" class="meet">猪牛羊肉</a></li>
+					<li><a href="/list4_1/" class="egg">禽类蛋品</a></li>
+					<li><a href="/list5_1/" class="vegetables">新鲜蔬菜</a></li>
+					<li><a href="/list6_1/" class="ice">速冻食品</a></li>
+				</ul>
+			</div>
+			<ul class="navlist fl">
+				<li><a href="/">首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="breadcrumb">
+		<a href="#">全部分类</a>
+		<span>></span>
+		<a href="#">{{kinds.title}}</a>
+	</div>
+
+	<div class="main_wrap clearfix">
+		<div class="l_wrap fl clearfix">
+			<div class="new_goods">
+				<h3>新品推荐</h3>
+				<ul>
+					{%for new in new_list%}
+					<li>
+						<a href="/{{new.id}}/"><img src="/static/{{new.gpic}}"></a>
+						<h4><a href="/{{ new.id }}/">{{new.gtitle}}</a></h4>
+						<div class="prize">¥{{new.gprice}}</div>
+					</li>
+					{% endfor %}
+
+				</ul>
+			</div>
+        </div>
+
+		<div class="r_wrap fr clearfix">
+			<div class="sort_bar">
+				<a href="/list{{ kinds.id }}_1/?sort=default" {% if sort == 'default' %}class="active" {% endif %}>默认</a>
+				<a href="/list{{ kinds.id }}_1/?sort=price&sort_price={% if sort_price == 'sort_price_asc' %}sort_price_desc{% else %}sort_price_asc{% endif %}" {% if sort == 'price' %}class="active" {% endif %} >价格</a>
+				<a href="/list{{ kinds.id }}_1/?sort=gclick" {% if sort == 'gclick'  %}class="active" {% endif %}>人气</a>
+			</div>
+
+			<ul class="goods_type_list clearfix">
+				{% for goods in page %}
+				<li>
+					<a href="/{{goods.id}}/"><img src="/static/{{goods.gpic}}"></a>
+					<h4><a href="/{{goods.id}}/">{{goods.gtitle}}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{goods.gprice}}</span>
+						<span class="unit">{{goods.gprice}}/{{goods.gunit}}</span>
+						<a href="javascript:add_cart({{ goods.id }})" class="add_goods" title="加入购物车"></a>
+					</div>
+				</li>
+				{% endfor %}
+			</ul>
+
+			<div class="pagenation">
+				{% if page.has_previous %}
+                <a href="/list{{kinds.id}}_1/?sort={{ sort }}&sort_price={{ sort_price }}">首页</a>
+				<a href="/list{{kinds.id}}_{{page.number|add:-1}}/?sort={{ sort }}&sort_price={{ sort_price }}"><上一页</a>
+				{% endif %}
+
+                {% if page.paginator.num_pages < 5 %}
+
+                    {% for pindex in page.paginator.page_range %}
+                    {% if pindex == page.number %}
+                    <a href="#" class="active">{{pindex}}</a>
+                    {% else %}
+                    <a href="/list{{kinds.id}}_{{pindex}}/?sort={{ sort }}&sort_price={{ sort_price }}">{{pindex}}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                {% else %}
+                    {% if page.number == 1 %}
+                        <a href="#" class="active">1</a>
+                        <a href="/list{{kinds.id}}_2/?sort={{ sort }}&sort_price={{ sort_price }}">2</a>
+                        <a href="/list{{kinds.id}}_3/?sort={{ sort }}&sort_price={{ sort_price }}">3</a>
+                        <a href="/list{{kinds.id}}_4/?sort={{ sort }}&sort_price={{ sort_price }}">4</a>
+                        <a href="/list{{kinds.id}}_5/?sort={{ sort }}&sort_price={{ sort_price }}">5</a>
+                    {% elif page.number == 2 %}
+                        <a href="/list{{kinds.id}}_1/?sort={{ sort }}&sort_price={{ sort_price }}">1</a>
+                        <a href="#" class="active">2</a>
+                        <a href="/list{{kinds.id}}_3/?sort={{ sort }}&sort_price={{ sort_price }}">3</a>
+                        <a href="/list{{kinds.id}}_4/?sort={{ sort }}&sort_price={{ sort_price }}">4</a>
+                        <a href="/list{{kinds.id}}_5/?sort={{ sort }}&sort_price={{ sort_price }}">5</a>
+
+
+                    {% elif page.number == page.paginator.num_pages %}
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-5 }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-4 }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-3 }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-2 }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-1 }}</a>
+                        <a href="#" class="active">{{ page.number }}</a>
+                    {% elif page.number == page.paginator.num_pages|add:-1 %}
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-3 }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-2 }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:-1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:-1 }}</a>
+                        <a href="#" class="active">{{ page.number }}</a>
+                        <a href="/list{{kinds.id}}_{{ page.number|add:1 }}/?sort={{ sort }}&sort_price={{ sort_price }}">{{ page.number|add:1 }}</a>
+                    {%else%}
+                    <a href="/list{{kinds.id}}_{{page.number|add:-2}}/?sort={{ sort }}&sort_price={{ sort_price }}">{{page.number|add:-2}}</a>
+                    <a href="/list{{kinds.id}}_{{page.number|add:-1}}/?sort={{ sort }}&sort_price={{ sort_price }}">{{page.number|add:-1}}</a>
+                    <a href="#" class="active">{{page.number}}</a>
+                    <a href="/list{{kinds.id}}_{{page.number|add:1}}/?sort={{ sort }}&sort_price={{ sort_price }}">{{page.number|add:1}}</a>
+                    <a href="/list{{kinds.id}}_{{page.number|add:2}}/?sort={{ sort }}&sort_price={{ sort_price }}">{{page.number|add:2}}</a>
+                    {% endif %}
+                {% endif %}
+				{% if page.has_next %}
+				    <a href="/list{{kinds.id}}_{{page.number|add:1}}/?sort={{ sort }}&sort_price={{ sort_price }}">下一页></a>
+                    <a href="/list{{kinds.id}}_{{page.paginator.num_pages}}/?sort={{ sort }}&sort_price={{ sort_price }}">末页></a>
+				{% endif %}
+
+			</div>
+		</div>
+	</div>
+
+{% endblock body%}
